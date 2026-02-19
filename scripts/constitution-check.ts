@@ -14,7 +14,7 @@ const ROOT = path.resolve(__dirname, "..");
 
 // ────────────────────────────────────────────────────────────
 // スキャン対象ファイルパターン
-// CONSTITUTION.md, docs/ACCEPTANCE_CRITERIA.md, scripts/ は除外
+// CONSTITUTION.md, docs/ACCEPTANCE_CRITERIA.md, scripts/, constants/questions.ts は除外
 // ────────────────────────────────────────────────────────────
 const SCAN_PATTERNS = [
   "app/**/*.tsx",
@@ -30,6 +30,7 @@ const EXCLUDE_PATHS = [
   "scripts/constitution-check.ts",
   "CONSTITUTION.md",
   "docs/ACCEPTANCE_CRITERIA.md",
+  "constants/questions.ts",
   "node_modules",
   ".next",
 ];

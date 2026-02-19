@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { QUESTIONS, SCALE_LABELS } from "@/constants/questions";
+import { QUESTIONS } from "@/constants/questions";
+
+const SCALE_LABELS = [
+  "全くそうでない",
+  "あまりそうでない",
+  "どちらともいえない",
+  "ややそうだ",
+  "非常にそうだ",
+];
 import { Answers } from "@/types";
 import { calculateScores } from "@/lib/scoring";
 import { saveAnswers, saveResult } from "@/lib/storage";

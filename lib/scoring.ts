@@ -7,8 +7,8 @@ import { QUESTIONS } from "@/constants/questions";
 const CHANNEL_QUESTION_COUNTS: Record<ChannelKey, number> = {
   belief: 5,
   affect: 5,
-  social: 4,
-  imagination: 5,
+  social: 5,
+  imagination: 4,
   cognition: 5,
   physiology: 4,
 };
