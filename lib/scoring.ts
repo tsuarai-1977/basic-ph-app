@@ -1,71 +1,39 @@
-import { Answers, ChannelKey, ChannelScore, ScoreResult } from "@/types";
-import { QUESTIONS } from "@/constants/questions";
+import { Channel, CHANNEL_ORDER, QUESTIONS, PRIMARY_WEIGHT, SECONDARY_WEIGHT } from './questions'
+
+// questionId -> 0|1|2|3
+export type Answers = Record<number, number>
 
 /**
- * チャンネルごとの最大スコア（問数 × 4）
+ * 回答から各チャンネルスコア（0-100）を計算する。
+ * primary チャンネルに PRIMARY_WEIGHT(3) 点、secondary に SECONDARY_WEIGHT(1) 点を配点し、
+ * チャンネルごとに最大値で割って 0-100 に正規化する。
  */
-const CHANNEL_QUESTION_COUNTS: Record<ChannelKey, number> = {
-  belief: 5,
-  affect: 5,
-  social: 5,
-  imagination: 4,
-  cognition: 5,
-  physiology: 4,
-};
+export function computeScores(answers: Answers): Record<Channel, number> {
+  const raw: Record<Channel, number> = { B: 0, A: 0, S: 0, I: 0, C: 0, Ph: 0 }
+  const max: Record<Channel, number> = { B: 0, A: 0, S: 0, I: 0, C: 0, Ph: 0 }
+
+  for (const q of QUESTIONS) {
+    const ans = answers[q.id] ?? 0
+    raw[q.primary]   += ans * PRIMARY_WEIGHT
+    raw[q.secondary] += ans * SECONDARY_WEIGHT
+    max[q.primary]   += 3 * PRIMARY_WEIGHT
+    max[q.secondary] += 3 * SECONDARY_WEIGHT
+  }
+
+  const scores = {} as Record<Channel, number>
+  for (const ch of CHANNEL_ORDER) {
+    scores[ch] = max[ch] > 0 ? Math.round((raw[ch] / max[ch]) * 100) : 0
+  }
+  return scores
+}
 
 /**
- * 回答データからチャンネル別スコアを計算する
+ * 最高スコアのチャンネルを返す。
+ * 同点の場合は B > A > S > I > C > Ph の順で決定（固定）。
  */
-export function calculateScores(answers: Answers): ScoreResult {
-  // チャンネルごとに合計スコアを集計
-  const rawScores: Record<ChannelKey, number> = {
-    belief: 0,
-    affect: 0,
-    social: 0,
-    imagination: 0,
-    cognition: 0,
-    physiology: 0,
-  };
-
-  for (const question of QUESTIONS) {
-    const answer = answers[question.id];
-    if (typeof answer === "number") {
-      rawScores[question.channel] += answer;
-    }
-  }
-
-  // チャンネルスコアオブジェクトを生成
-  const scores: Record<ChannelKey, ChannelScore> = {} as Record<
-    ChannelKey,
-    ChannelScore
-  >;
-
-  const channelKeys: ChannelKey[] = [
-    "belief",
-    "affect",
-    "social",
-    "imagination",
-    "cognition",
-    "physiology",
-  ];
-
-  for (const key of channelKeys) {
-    const questionCount = CHANNEL_QUESTION_COUNTS[key];
-    const maxScore = questionCount * 4;
-    const score = rawScores[key];
-    scores[key] = {
-      channel: key,
-      score,
-      maxScore,
-      percentage: maxScore > 0 ? Math.round((score / maxScore) * 100) : 0,
-    };
-  }
-
-  // 上位チャンネルを特定（スコアの高い順、同率はチャンネル順を維持）
-  const topChannels = channelKeys
-    .slice()
-    .sort((a, b) => scores[b].score - scores[a].score)
-    .slice(0, 3);
-
-  return { scores, topChannels };
+export function pickTop(scores: Record<Channel, number>): Channel {
+  return CHANNEL_ORDER.reduce(
+    (best, ch) => (scores[ch] > scores[best] ? ch : best),
+    CHANNEL_ORDER[0]
+  )
 }

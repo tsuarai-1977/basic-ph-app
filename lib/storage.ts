@@ -1,57 +1,65 @@
-import { Answers, ScoreResult } from "@/types";
+import type { Channel } from './questions'
+import type { Recommendation } from './recommendations'
 
-const ANSWERS_KEY = "basicph_answers";
-const RESULT_KEY = "basicph_result";
+// ── 型定義 ──────────────────────────────────────────────────
+export type { Recommendation }
 
-/**
- * 回答データを sessionStorage に保存する
- */
-export function saveAnswers(answers: Answers): void {
-  if (typeof window === "undefined") return;
-  sessionStorage.setItem(ANSWERS_KEY, JSON.stringify(answers));
+export type Result = {
+  id: string
+  createdAt: number
+  scores: Record<Channel, number>  // 各チャンネル 0-100
+  top: Channel
+  recommendation: Recommendation
 }
 
-/**
- * sessionStorage から回答データを取得する
- */
-export function loadAnswers(): Answers | null {
-  if (typeof window === "undefined") return null;
-  const raw = sessionStorage.getItem(ANSWERS_KEY);
-  if (!raw) return null;
+// ── localStorage キー（固定） ──────────────────────────────
+const HISTORY_KEY = 'basicph_history_v1'
+const LAST_KEY    = 'basicph_last_result_v1'
+
+// ── 書き込み ───────────────────────────────────────────────
+
+/** 結果を保存する（最新 + 履歴に追加）。SSR 安全。 */
+export function saveResult(result: Result): void {
+  if (typeof window === 'undefined') return
   try {
-    return JSON.parse(raw) as Answers;
+    localStorage.setItem(LAST_KEY, JSON.stringify(result))
+    const history = loadHistory()
+    // 同じ id があれば上書き、なければ先頭に追加
+    const updated = [result, ...history.filter(r => r.id !== result.id)]
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(updated))
   } catch {
-    return null;
+    // localStorage が使えない環境（Safari プライベートなど）では無視
   }
 }
 
-/**
- * スコア結果を sessionStorage に保存する
- */
-export function saveResult(result: ScoreResult): void {
-  if (typeof window === "undefined") return;
-  sessionStorage.setItem(RESULT_KEY, JSON.stringify(result));
-}
+// ── 読み込み ───────────────────────────────────────────────
 
-/**
- * sessionStorage からスコア結果を取得する
- */
-export function loadResult(): ScoreResult | null {
-  if (typeof window === "undefined") return null;
-  const raw = sessionStorage.getItem(RESULT_KEY);
-  if (!raw) return null;
+/** 履歴を新しい順で返す。SSR 安全。 */
+export function loadHistory(): Result[] {
+  if (typeof window === 'undefined') return []
   try {
-    return JSON.parse(raw) as ScoreResult;
+    const raw = localStorage.getItem(HISTORY_KEY)
+    if (!raw) return []
+    return JSON.parse(raw) as Result[]
   } catch {
-    return null;
+    return []
   }
 }
 
-/**
- * sessionStorage のデータをすべてクリアする
- */
-export function clearStorage(): void {
-  if (typeof window === "undefined") return;
-  sessionStorage.removeItem(ANSWERS_KEY);
-  sessionStorage.removeItem(RESULT_KEY);
+/** 最新の結果を返す。SSR 安全。 */
+export function loadLastResult(): Result | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(LAST_KEY)
+    if (!raw) return null
+    return JSON.parse(raw) as Result
+  } catch {
+    return null
+  }
+}
+
+/** id で結果を検索して返す。SSR 安全。 */
+export function loadResultById(id: string): Result | null {
+  const history = loadHistory()
+  return history.find(r => r.id === id) ?? null
 }
