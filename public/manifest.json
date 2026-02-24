@@ -1,0 +1,10 @@
+{
+  "name": "あなたの元気を少し取り戻すためのアプリ",
+  "short_name": "BASIC-Ph",
+  "description": "BASIC-Ph 多次元対処モデルに基づく自己理解・自己対処の可視化ツール",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#C4B5FD",
+  "orientation": "portrait"
+}
