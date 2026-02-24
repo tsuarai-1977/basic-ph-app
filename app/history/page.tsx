@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { HistoryEntry } from "@/lib/mvp-types";
 import { loadHistory, clearHistory } from "@/lib/mvp-storage";
-import { CHANNEL_INFO } from "@/lib/mvp-channels";
 
 function formatDate(iso: string): string {
   try {
@@ -21,24 +20,9 @@ function formatDate(iso: string): string {
   }
 }
 
-function ChannelBadge({ code }: { code: string }) {
-  const info = CHANNEL_INFO[code as keyof typeof CHANNEL_INFO];
-  if (!info) return null;
-  return (
-    <span
-      className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
-      style={{
-        backgroundColor: info.color + "33",
-        color: "#374151",
-      }}
-    >
-      <span
-        className="w-2 h-2 rounded-full"
-        style={{ backgroundColor: info.color }}
-      />
-      {code}｜{info.label}
-    </span>
-  );
+function ChannelLabel({ primary1, primary2 }: { primary1: string; primary2: string }) {
+  const label = primary1 === primary2 ? primary1 : `${primary1} + ${primary2}`;
+  return <span className="text-xs text-gray-400">{label}</span>;
 }
 
 export default function HistoryPage() {
@@ -105,12 +89,7 @@ export default function HistoryPage() {
                 </div>
 
                 {/* チャンネル */}
-                <div className="flex flex-wrap gap-2">
-                  <ChannelBadge code={entry.primary1} />
-                  {entry.primary2 !== entry.primary1 && (
-                    <ChannelBadge code={entry.primary2} />
-                  )}
-                </div>
+                <ChannelLabel primary1={entry.primary1} primary2={entry.primary2} />
               </div>
             ))}
           </div>
