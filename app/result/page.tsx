@@ -32,10 +32,15 @@ export default function ResultPage() {
   return (
     <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
       {/* タイトル（固定） */}
-      <div>
+      <div className="space-y-3">
         <h2 className="text-xl font-bold text-gray-800 leading-snug">
           あなたに馴染みがある対処チャンネル（BASIC-Ph）
         </h2>
+        {/* 回答の事実表示（評価なし） */}
+        <div className="text-sm text-gray-500 space-y-0.5">
+          <p>あなたが選んだ行動：{result.q1_choice}</p>
+          <p>あなたが持っていくもの：{result.q2_choice}</p>
+        </div>
       </div>
 
       {/* 共通説明（固定・3文） */}
